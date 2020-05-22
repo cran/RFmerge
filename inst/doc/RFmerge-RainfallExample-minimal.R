@@ -85,15 +85,16 @@ res(CHIRPS5km)
 ( res(CHIRPS5km) == res(PERSIANNcdr5km) )
 ( res(CHIRPS5km) == res(ValparaisoDEM5km) )
 
+## ----ReprojectingMetadata-----------------------------------------------------
+stations.utm <- sf::st_transform(stations, crs=32719) # for 'sf' objects
+
 ## ----ReprojectingRasters------------------------------------------------------
-utmz19s.p4s <- CRS("+init=epsg:32719") # WGS 84 / UTM zone 19S
+#utmz19s.p4s <- CRS("+init=epsg:32719") # WGS 84 / UTM zone 19S
+utmz19s.p4s <- sf::st_crs(stations.utm)$proj4string # WGS 84 / UTM zone 19S
 
 CHIRPS5km.utm        <- projectRaster(from=CHIRPS5km, crs=utmz19s.p4s)
 PERSIANNcdr5km.utm   <- projectRaster(from=PERSIANNcdr5km, crs=utmz19s.p4s)
 ValparaisoDEM5km.utm <- projectRaster(from=ValparaisoDEM5km, crs=utmz19s.p4s)
-
-## ----ReprojectingMetadata-----------------------------------------------------
-stations.utm <- sf::st_transform(stations, crs=32719) # for 'sf' objects
 
 ## ----ReprojectingSHP----------------------------------------------------------
 ValparaisoSHP.utm <- sf::st_transform(ValparaisoSHP, crs=32719)
@@ -119,21 +120,13 @@ covariates.utm <- list(chirps=CHIRPS5km.utm, persianncdr=PERSIANNcdr5km.utm,
 onWin <- ( (R.version$os=="mingw32") | (R.version$os=="mingw64") )
 ifelse(onWin, parallel <- "parallelWin", parallel <- "parallel")
 
-## ----RFmergeWithLinuxParallelisation, eval = TRUE-----------------------------
+## ----RFmergeWithParallelisation, eval = TRUE----------------------------------
 par.nnodes <- min(parallel::detectCores()-1, 2)
 drty.out <- file.path(tempdir(), "Test.par")
 rfmep <- RFmerge(x=ValparaisoPPts, metadata=ValparaisoPPgis.utm, cov=covariates.utm,
                  id="ID", lat="lat", lon="lon", mask=ValparaisoSHP.utm, 
                  training=0.8, write2disk=TRUE, drty.out=drty.out, 
                  parallel=parallel, par.nnodes=par.nnodes)
-
-## ----RFmergeWithWindowsParallelisation, eval = FALSE--------------------------
-#  par.nnodes <- min(parallel::detectCores()-1, 2)
-#  drty.out <- file.path(tempdir(), "Test.par")
-#  rfmep <- RFmerge(x=ValparaisoPPts, metadata=ValparaisoPPgis.utm, cov=covariates.utm,
-#                   id="Code", lat="lat", lon="lon", mask=ValparaisoSHP.utm,
-#                   training=0.8, write2disk=TRUE, drty.out=drty.out,
-#                   parallel=parallelWin, par.nnodes=par.nnodes)
 
 ## ----Evaluation, eval= FALSE--------------------------------------------------
 #  ts.path       <- paste0(drty.out, "/Ground_based_data/Evaluation/Evaluation_ts.txt")

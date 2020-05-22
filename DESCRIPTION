@@ -2,7 +2,7 @@ Package: RFmerge
 Type: Package
 Title: Merging of Satellite Datasets with Ground Observations using
         Random Forests
-Version: 0.1-6
+Version: 0.1-10
 Author: Mauricio Zambrano-Bigiarini [aut, cre, cph]
     (<https://orcid.org/0000-0002-9536-643X>),
   Oscar M. Baez-Villanueva [aut, cph],
@@ -22,5 +22,5 @@ BugReports: https://github.com/hzambran/RFmerge/issues
 LazyLoad: yes
 NeedsCompilation: no
 Repository: CRAN
-Packaged: 2020-01-08 00:21:08 UTC; hzambran
-Date/Publication: 2020-01-09 11:10:02 UTC
+Packaged: 2020-05-21 16:53:52 UTC; hzambran
+Date/Publication: 2020-05-22 08:00:02 UTC

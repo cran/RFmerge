@@ -1,9 +1,20 @@
 NEWS/ChangeLog for RFmerge
 --------------------------
+0.1-10  21-May-2020
+        o Updated version after CRAN reported an unnecessary 'RFmerge-internal.Rd' file, which was removed for this release.
 
+0.1-9   12-May-2020
+        o Updated version after CRAN reported an error in the vignette ("Invalid argument: 'cov' and 'mask' have different CRS !!"). this error was previously undetected because the package was tested with R-devel in combination with GEOS 3.5.1, GDAL 2.2.2, PROJ 4.9.2, while CRAN uses GEOS 3.8.1, GDAL 3.0.4, PROJ 7.0.0.
+
+0.1-8   28-Apr-2020 (not public)
+        o Updated version after CRAN reported a problem with the vignette when tested against R-devel.
+
+0.1-7   27-Apr-2020 (not public)
+        o 'rfmerge': sf::st_crs(x])[["epsg"]] was changed to 'sf::st_crs(x)$proj4string' for identifying the projection of a vectorial or raster object. This was due to a report from Edzer Pebema mentioning that the old call used a legacy 'crc' structure, which was changed in the new verison of the 'sf' package.
+       
 0.1-6   07-Jan-2020
         o 'rmarkdown' was added to 'Suggests' after failing a new CRAN test.
-        o the minimal vignette was modified to automatically set the 'parallel' argumento to 'paralell' or 'parallelWin' depneding whether the OS is based on GNU/Linux or Windows, repesectively.
+        o the minimal vignette was modified to automatically set the 'parallel' argumento to 'paralell' or 'parallelWin' depending whether the OS is based on GNU/Linux or Windows, respectively.
 
 0.1-5   04-Jan-2020
         o 'RFmerge-package.Rd': now the example correctly uses 2 cores as maximum when package is tested with the "--run-donttest" option

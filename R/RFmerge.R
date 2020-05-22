@@ -19,6 +19,7 @@
 # Started: 07-Nov-2019 (the package)                                           #
 # Updates: 16-Nov-2019 ; 10-Dec-2019 ; 11-Dec-2019 ; 12-Dec-2019 ; 13-Dec-2019 #
 #          14-Dec-2019 ; 17-Dec-2019 ; 20-Dec-2019 ; 23-Dec-2019               #
+#          30-Jan-2020 ; 27-Apr-2020 ; 12-May-2020                             #
 ################################################################################
 
 # 'x'        : zoo object with ground-based values that will be used as the dependent variable to train the RF model.
@@ -33,7 +34,7 @@
 #              as a stack file (in the case of the dynamic covariates) or as a raster file (in the case of static covariates
 #             , e.g., a digital elevation model). Every covariate must be stored in a different object in the list.
 #
-# 'mask'     : spatial vector object of the study area. class(mask) must be SpatialPolygonsDataFrame.
+# 'mask'     : spatial vector object of the study area. class(mask) must be a  \kbd{sf} object with "POLYGON" or "MULTIPOLYGON" geometry.
 #
 # 'drty.out' : path to the directory where the final product and the training and evaluation sets will be exported
 #
@@ -113,12 +114,12 @@ RFmerge.zoo <- function(x, metadata, cov, mask, training,
   } else if ( ( !(id %in% colnames(metadata) ) ) | ( !(lat %in% colnames(metadata) ) ) | ( !(lon %in% colnames(metadata) ) ) )
       stop("Invalid argument: 'metadata' must have 'id' (identifier), 'lon' (longitude) and 'lat' (latitude) fields !")
 
-  # Cheking the mask
+  # Checking the mask
   mask.crs <- NULL
   if (!missing(mask)) {
-    if ( !sf::st_is(mask, c("POLYGON", "MULIPOLYGON")) ) {
+    if ( !sf::st_is(mask, c("POLYGON", "MULTIPOLYGON")) ) {
       stop("Invalid argument: 'mask' must be a 'sf' (multi)polygon object !!")
-    } else mask.crs <- sf::st_crs(mask)[["epsg"]]
+    } else mask.crs <- sf::st_crs(mask)$proj4string
   } # IF end
   
   # Cheking if the user specified the seed
@@ -128,7 +129,7 @@ RFmerge.zoo <- function(x, metadata, cov, mask, training,
   if ( (training < 0) | (training > 1) )
     stop("Invalid argument: 'training' must be in [0, 1]")
 
-  # Cheking 'cov'
+  # Checking 'cov'
   cov.crs <- NULL
   if( !is.list(cov) ) { # is it a list object?
     stop("Invalid argument: 'cov' must be a list with all the covariates !")
@@ -138,13 +139,18 @@ RFmerge.zoo <- function(x, metadata, cov, mask, training,
       } else
           if (!raster::compareRaster(cov)) {
             stop("Invalid argument: All the elements in 'cov' must have the same spatial extent, CRS, rotation and geometry !!")
-          } else cov.crs <- sf::st_crs(cov[[1]])[["epsg"]]
+          } else cov.crs <- raster::crs(cov[[1]])
 
 
   # Checking that the CRS of 'mask' and 'cov' are the same, if 'mask' is provided
   if (!missing(mask)) {
-    if (mask.crs != cov.crs)
-      stop("Invalid argument: 'cov' and 'mask' have different CRS !!")
+    if (raster::compareCRS(mask.crs,cov.crs))
+      warning("Invalid argument: 'cov' and 'mask' have different CRS. Please ensure they actually have the same CRS !!.")
+  } # IF end
+
+  e <- intersect(raster::extent(mask), raster::extent(cov[[1]]))
+  if (is.null(e)) {
+    stop("Invalid argument: the spatial extents of 'cov' and 'mask' do not overlap !!")
   } # IF end
 
   # Cheking that all the time-varying covariates have the same length or they have 1 layer only

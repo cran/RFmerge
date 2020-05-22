@@ -57,7 +57,7 @@ All time-varying covariates in \code{cov} MUST have the same number of layers (b
 }
     \item{mask}{
 OPTIONAL. If provided, the final merged product maks out all values in \code{cov} outside \code{mask}. \cr
-Spatial object (vectorial) with the spatial borders of the study area (e.g., catchment, administrative borders). \code{class(mask)} must be \kbd{SpatialPolygonsDataFrame} or \kbd{sf} with "POLYGON" or "MULTIPOLYGON" geometry.
+Spatial object (vectorial) with the spatial borders of the study area (e.g., catchment, administrative borders). \code{class(mask)} must be a \kbd{sf} object with "POLYGON" or "MULTIPOLYGON" geometry.
 }
    \item{training}{
 Numeric indicating the percentage of stations that will be used in the training set. \cr
@@ -100,7 +100,7 @@ Numeric indicating the maximum number trees to grow in the Random Forest algorit
 A function to specify the action to be taken if NAs are found.  (NOTE: If given, this argument must be named.)
 }   
   \item{write2disk}{
-logical, indicates if the output merged raster layers and the training and avaluation datasets (two files each, one with time series and other with metadata) will be written to the disk. By default \code{write2disk=TRUE}
+logical, indicates if the output merged raster layers and the training and avaluation datasets (two files each, one with time series and other with metadata) will be written to the disk. By default \code{write2disk=FALSE}
 }
    \item{drty.out}{
 Character with the full path to the directory where the final merged product will be exported as well as the training and evaluation datasets. Only used when \code{write2disk=TRUE}
@@ -172,19 +172,17 @@ covariates <- list(chirps=CHIRPS5km, persianncdr=PERSIANNcdr5km,
 rfmep <- RFmerge(x=ValparaisoPPts, metadata=ValparaisoPPgis, cov=covariates, 
                 id="Code", lat="lat", lon="lon", mask=ValparaisoSHP, training=1)
 
-# Limiting the maximum number of cores to be used in this toy example to 2
+
+# Detecting if your OS is Windows or GNU/Linux, 
+# and setting the 'parallel' argument accordingly:
+onWin <- ( (R.version$os=="mingw32") | (R.version$os=="mingw64") )
+ifelse(onWin, parallel <- "parallelWin", parallel <- "parallel")
+
+#Using parallelisation, with a maximum number of nodes/cores to be used equal to 2:
 par.nnodes <- min(parallel::detectCores()-1, 2)
-
-# using parallelisation in GNU/Linux machines
-rfmep <- RFmerge(x=ValparaisoPPts, metadata=ValparaisoPPgis, cov=covariates,  
-                id="Code", lat="lat", lon="lon", mask=ValparaisoSHP, training=1,
-                parallel="parallel", par.nnodes=par.nnodes)
-
-
-# using parallelisation in Window$ machines
-rfmep <- RFmerge(x=ValparaisoPPts, metadata=ValparaisoPPgis, cov=covariates,  
-                id="Code", lat="lat", lon="lon", mask=ValparaisoSHP, training=1,
-                parallel="parallelWin", par.nnodes=par.nnodes)
+rfmep <- RFmerge(x=ValparaisoPPts, metadata=ValparaisoPPgis, cov=covariates,
+                 id="Code", lat="lat", lon="lon", mask=ValparaisoSHP, 
+                 training=0.8, parallel=parallel, par.nnodes=par.nnodes)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
